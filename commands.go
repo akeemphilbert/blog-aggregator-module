@@ -2,7 +2,6 @@ package blogaggregatormodule
 
 import (
 	"encoding/json"
-
 	"github.com/wepala/weos"
 )
 

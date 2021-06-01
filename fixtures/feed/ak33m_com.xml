@@ -1,0 +1,100 @@
+
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Akeem Philbert&#39;s Blog</title>
+    <link>https://ak33m.com/</link>
+    <description>Recent content on Akeem Philbert&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <itunes:author>Akeem Philbert</itunes:author>
+    <lastBuildDate>Sat, 27 Mar 2021 17:05:53 -0400</lastBuildDate><atom:link href="https://ak33m.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>It&#39;s Over Magento!</title>
+      <link>https://ak33m.com/posts/its-over-magento/</link>
+      <pubDate>Sat, 27 Mar 2021 17:05:53 -0400</pubDate>
+      
+      <guid>https://ak33m.com/posts/its-over-magento/</guid>
+      <description>So I&amp;rsquo;ve always had a hate-hate relationship with Magento (there never was love). Ours was a convenient relationship; I needed something to run an online bookstore we wanted to start, and all the other solutions we looked at didn&amp;rsquo;t fit the bill. We wanted to accept payments in Trinidad and Tobago dollars, something you don&amp;rsquo;t get easier with hosted solutions. We also wanted something that had broad support and a variety of templates.</description>
+    </item>
+    
+    <item>
+      <title>Viro React</title>
+      <link>https://ak33m.com/posts/viro-react/</link>
+      <pubDate>Mon, 13 Apr 2020 15:57:22 -0400</pubDate>
+      
+      <guid>https://ak33m.com/posts/viro-react/</guid>
+      <description>I recently made an Augmented Reality Easter Egg Hunt app for my kids to play. It took me a week of part-time work to get it done (with some help on design and graphics). A big reason for getting something up so quickly was the ViroReact, a library for rapidly developing cross-platform AR/VR experiences.
+The technologies used in the app include:
+  React Native - mobile development
+  Redux - state management</description>
+    </item>
+    
+    <item>
+      <title>Easter Egg Hunt</title>
+      <link>https://ak33m.com/posts/easter-egg-hunt/</link>
+      <pubDate>Fri, 10 Apr 2020 09:08:21 -0400</pubDate>
+      
+      <guid>https://ak33m.com/posts/easter-egg-hunt/</guid>
+      <description>It&amp;rsquo;s Easter, and my family and I usually host an Easter Egg Hunt for the kids. Currently, because of COVID-19 strict social distancing guidelines are being followed, and we plan to have a small hunt with our kids this year. On Saturday (April 4th), I thought it would be a great idea to create an Augmented Reality Easter Egg Hunt where a &amp;ldquo;bunny&amp;rdquo; would place eggs using the app, and participants can find the eggs using the app.</description>
+    </item>
+    
+    <item>
+      <title>We&#39;re in IT to win</title>
+      <link>https://ak33m.com/posts/we-in-it-to-win/</link>
+      <pubDate>Fri, 03 Apr 2020 13:08:21 -0400</pubDate>
+      
+      <guid>https://ak33m.com/posts/we-in-it-to-win/</guid>
+      <description>unsplash-logoMarvin MeyerToday I was doing a bit of research to understand what people are searching for when they look for help with technology online. The usual terms that came up include CRM, social media, and e-commerce. There was one term that sparked an interest more than the others, and that term was Information Technology or IT.
+Instinctively as a software developer, I&amp;rsquo;ve shunned the phrase IT as a way to describe what I do.</description>
+    </item>
+    
+    <item>
+      <title>Intermediate Budgeting</title>
+      <link>https://ak33m.com/posts/intermediate-budgeting/</link>
+      <pubDate>Sun, 26 Aug 2018 13:08:21 -0400</pubDate>
+      
+      <guid>https://ak33m.com/posts/intermediate-budgeting/</guid>
+      <description>Let me start off by saying that I&amp;rsquo;m a long time Mint user (9 years) and I always rave how using Mint changed my life. This was back when I had no budgeting system in place and I was desperate to get visibility into what was going on in my finances. By simply being able to see where my money was going I was able to make significant life decisions that I am proud of.</description>
+    </item>
+    
+    <item>
+      <title>Budget Baker (Wallet App) Getting Started</title>
+      <link>https://ak33m.com/posts/budgetbakers-gettingstarted/</link>
+      <pubDate>Sun, 19 Aug 2018 13:08:21 -0400</pubDate>
+      
+      <guid>https://ak33m.com/posts/budgetbakers-gettingstarted/</guid>
+      <description>Wallet budget bakers image   The Wallet App (BudgetBakers) is a great app for those who want more granular control of their finance tracking.
+Pros  You can import records manually. This means if your bank is not supported in the account linking no worries The CSV import in particular works pretty well. It allows you to map columns etc Wallet allows for managing accounts with different currencies.</description>
+    </item>
+    
+    <item>
+      <title>Privacy</title>
+      <link>https://ak33m.com/privacy/</link>
+      <pubDate>Sun, 04 Mar 2018 10:28:22 -0400</pubDate>
+      
+      <guid>https://ak33m.com/privacy/</guid>
+      <description>All content provided on this blog is for informational purposes only. The owner of this blog makes no representations as to the accuracy or completeness of any information on this site or found by following any link on this site. The owner will not be liable for any errors or omissions in this information nor for the availability of this information. The owner will not be liable for any losses, injuries, or damages from the display or use of this information.</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>https://ak33m.com/about/</link>
+      <pubDate>Sat, 03 Mar 2018 12:05:03 -0400</pubDate>
+      
+      <guid>https://ak33m.com/about/</guid>
+      <description>I am Akeem Philbert, founder of Wepala
+Current tech interests are Golang, Test Driven Development (TDD), Domain Driven Design (DDD) and anything related to system architecture.</description>
+    </item>
+    
+    <item>
+      <title>Hello World</title>
+      <link>https://ak33m.com/posts/hello-world/</link>
+      <pubDate>Sat, 03 Mar 2018 10:07:39 -0400</pubDate>
+      
+      <guid>https://ak33m.com/posts/hello-world/</guid>
+      <description>Hello World!(again). I used to be a semi-active blogger many years ago when I was a Flash developer. Like most folks back then (and even now) I used Wordpress. My blog was more of a note to self but it was relatively popular because of the news aggregator the Flash community used. (Un)like most folks I didn&amp;rsquo;t keep the software up to date and paid the price. At the time I simply took down the site and figured I&amp;rsquo;d back up the content at some point.</description>
+    </item>
+    
+  </channel>
+</rss>

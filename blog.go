@@ -3,14 +3,27 @@ package blogaggregatormodule
 import (
 	"encoding/json"
 
+	"github.com/mmcdole/gofeed"
 	"github.com/wepala/weos"
 )
 
+type Author struct {
+	Name string
+	Email string
+}
+
+type Post struct {
+	Title string
+	Description string
+	Content string
+}
 type Blog struct {
 	weos.AggregateRoot
 	Title string
 	Description string
 	URL string `json:"url"`
+	Authors []*Author
+	Posts []*Post
 }
 
 func (b *Blog) Init(blog *AddBlogRequest) (*Blog, error) {
@@ -31,6 +44,29 @@ func (b *Blog) Validate(blog *AddBlogRequest) error {
 	return nil
 }
 
+func (b *Blog) AddFeed(feed *gofeed.Feed) error {
+	b.Title = feed.Title
+	for _,author := range feed.Authors {
+		event, err := weos.NewBasicEvent(AUTHOR_CREATED,GenerateID(),"Blog",author)
+		if err != nil {
+			return err
+		}
+		b.NewChange(event)
+		b.ApplyChanges([]*weos.Event{event})
+	}
+
+	for _, post := range feed.Items {
+		event, err := weos.NewBasicEvent(POST_CREATED,GenerateID(),"Blog",post)
+		if err != nil {
+			return err
+		}
+		b.NewChange(event)
+		b.ApplyChanges([]*weos.Event{event})
+	}
+	return nil
+}
+
+
 func (b *Blog) ApplyChanges (changes []*weos.Event) error {
 	for _, change := range changes {
 		switch change.Type {
@@ -39,6 +75,20 @@ func (b *Blog) ApplyChanges (changes []*weos.Event) error {
 			if err != nil {
 				return err
 			}
+		case AUTHOR_CREATED:
+			var author *Author
+			err := json.Unmarshal(change.Payload, &author)
+			if err != nil {
+				return err
+			}
+			b.Authors = append(b.Authors,author)
+		case POST_CREATED:
+			var post *Post
+			err := json.Unmarshal(change.Payload, &post)
+			if err != nil {
+				return err
+			}
+			b.Posts = append(b.Posts,post)
 		}
 	}
 

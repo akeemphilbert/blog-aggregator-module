@@ -13,6 +13,7 @@ var GenerateID = func () string {
 
 type Receiver struct {
 	application weos.Application
+	blogService *BlogService
 }
 
 func (r *Receiver) AddBlog(ctx context.Context, command *weos.Command) error {
@@ -21,7 +22,7 @@ func (r *Receiver) AddBlog(ctx context.Context, command *weos.Command) error {
 	if err != nil {
 		return err
 	}
-	blog, err := new(Blog).Init(request)
+	blog, err :=r.blogService.AddBlog(request)
 	if err != nil {
 		return err
 	}
@@ -30,7 +31,10 @@ func (r *Receiver) AddBlog(ctx context.Context, command *weos.Command) error {
 }
 
 func NewReceiver(application weos.Application) *Receiver {
-	return &Receiver{application: application}
+	return &Receiver{
+		application: application,
+		blogService: NewBlogService(application.HTTPClient(),application.EventRepository()),
+	}
 }
 
 func Initialize(application weos.Application) error {
