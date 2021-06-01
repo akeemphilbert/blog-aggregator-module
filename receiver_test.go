@@ -2,9 +2,11 @@ package blogaggregatormodule_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
-	"github.com/wepala/weos"
+
 	blogaggregatormodule "github.com/wepala/blog-aggregator-module"
+	"github.com/wepala/weos"
 )
 
 func TestAddBlog (t *testing.T) {
@@ -19,6 +21,9 @@ func TestAddBlog (t *testing.T) {
 	mockedApplication := &ApplicationMock{
 		EventRepositoryFunc: func () weos.EventRepository {
 			return mockEventRepository
+		},
+		HTTPClientFunc: func() *http.Client {
+			return &http.Client{}
 		},
 	}
 
