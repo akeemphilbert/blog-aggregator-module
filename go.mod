@@ -12,7 +12,7 @@ require (
 	github.com/segmentio/ksuid v1.0.3 // indirect
 	github.com/spf13/viper v1.7.1 // indirect
 	github.com/wepala/go-testhelpers v0.0.0-20200715110105-55c57c235b75 // indirect
-	github.com/wepala/weos v0.0.7-0.20210525165623-5775e32be27d // indirect
+	github.com/wepala/weos v0.0.7-0.20210606185124-b580934e4c40 // indirect
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	gorm.io/gorm v1.21.10 // indirect
 )

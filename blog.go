@@ -57,7 +57,6 @@ func (b *Blog) AddFeed(feed *gofeed.Feed) error {
 			Title: feed.Title,
 		},
 	}
-	updatedPayload.ID = b.ID //TODO this is a bit of a hack because without this id will be blank and cause errors saving events. The fix is to have the omitempty meta tag on id in WeOS
 	//set the link to be the blog url if link is not empty
 	if feed.Link != "" && b.URL != feed.Link {
 		updatedPayload.URL = feed.Link
@@ -99,6 +98,7 @@ func (b *Blog) AddFeed(feed *gofeed.Feed) error {
 
 func (b *Blog) ApplyChanges (changes []*weos.Event) error {
 	for _, change := range changes {
+		b.SequenceNo = change.Meta.SequenceNo
 		switch change.Type {
 		case BLOG_ADDED:
 			b.ID = change.Meta.EntityID
