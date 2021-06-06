@@ -53,7 +53,7 @@ func (b *Blog) Validate(blog *AddBlogRequest) error {
 func (b *Blog) AddFeed(feed *gofeed.Feed) error {
 	b.Title = feed.Title
 	for _,author := range feed.Authors {
-		event, err := weos.NewBasicEvent(AUTHOR_CREATED,GenerateID(),"Blog",&AuthorCreatedPayload{
+		event, err := weos.NewBasicEvent(AUTHOR_CREATED,b.ID,"Blog",&AuthorCreatedPayload{
 			BlogID: b.ID,
 			Name: author.Name,
 			Email: author.Email,
@@ -66,7 +66,7 @@ func (b *Blog) AddFeed(feed *gofeed.Feed) error {
 	}
 
 	for _, post := range feed.Items {
-		event, err := weos.NewBasicEvent(POST_CREATED,GenerateID(),"Blog",&PostCreatedPayload{
+		event, err := weos.NewBasicEvent(POST_CREATED,b.ID,"Blog",&PostCreatedPayload{
 			BlogID: b.ID,
 			Item: *post,
 		})

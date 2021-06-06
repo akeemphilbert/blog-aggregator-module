@@ -56,10 +56,14 @@ func reset(*godog.Scenario) {
 	testUsers = make(map[string]*TestUser)
 	testBlogs = make(map[string]*TestBlog)
 	err = nil
-	currentID = ksuid.New().String()
+	
 
 	blogaggregatormodule.GenerateID = func() string {
-		return currentID
+		id := ksuid.New().String()
+		if currentID == "" {
+			currentID = id
+		}
+		return id
 	}
 
 	
