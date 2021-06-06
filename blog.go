@@ -31,7 +31,13 @@ func (b *Blog) Init(blog *AddBlogRequest) (*Blog, error) {
 	if err != nil {
 		return nil, err
 	}
-	event, err := weos.NewBasicEvent(BLOG_ADDED,GenerateID(),"Blog",blog)
+	createdPayload := &BlogCreatedPayload{
+		Blog: Blog {
+			URL: blog.Url,
+		},
+	}
+	createdPayload.ID = GenerateID()
+	event, _ := weos.NewBasicEvent(BLOG_ADDED,createdPayload.ID,"Blog",createdPayload)
 	b.NewChange(event)
 	b.ApplyChanges([]*weos.Event{event})
 	return b, nil

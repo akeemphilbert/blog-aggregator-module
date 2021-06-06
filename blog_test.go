@@ -33,6 +33,20 @@ func TestBlogCreate(t *testing.T) {
 		if blog.ID == "" {
 			t.Errorf("expected the blog id to be set")
 		}
+
+		//check for the blog id in the event payload 
+		blogCreatedEvent := blog.GetNewChanges()[0].(*weos.Event)
+		var blogCreatePayload struct {
+			ID string `json:"id"`
+		}
+		err = json.Unmarshal(blogCreatedEvent.Payload,&blogCreatePayload)
+		if err != nil {
+			t.Errorf("unexpected error un marshalling blog create event %s",err)
+		}
+	
+		if blogCreatePayload.ID != blog.ID {
+			t.Errorf("expected the blog id to be %s, got %s",blog.ID,blogCreatePayload.ID)
+		}
 	})
 
 	t.Run("don't create blog with missing url",func(t *testing.T) {
