@@ -2,29 +2,28 @@ package blogaggregatormodule
 
 import (
 	"encoding/json"
-
 	"github.com/mmcdole/gofeed"
 	"github.com/wepala/weos"
 )
 
 type Author struct {
-	Name string
-	Email string
+	Name string `json:"name,omitempty"`
+	Email string `json:"email,omitempty"`
 }
 
 type Post struct {
-	Title string
-	Description string
-	Content string
+	Title string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Content string `json:"content,omitempty"`
 }
 type Blog struct {
 	weos.AggregateRoot
-	Title string
-	Description string
+	Title string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
 	URL string `json:"url,omitempty"`
 	FeedURL string `json:"feedUrl,omitempty"`
-	Authors []*Author
-	Posts []*Post
+	Authors []*Author `json:"authors,omitempty"`
+	Posts []*Post `json:"posts,omitempty"`
 }
 
 func (b *Blog) Init(blog *AddBlogRequest) (*Blog, error) {
