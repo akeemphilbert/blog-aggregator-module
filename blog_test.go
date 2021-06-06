@@ -66,7 +66,7 @@ func TestBlogValidate(t *testing.T) {
 
 func TestBlogAddFeed(t *testing.T) {
 	blog,err := new(blogaggregatormodule.Blog).Init(&blogaggregatormodule.AddBlogRequest{
-		Url: "https://ak33m.com",
+		Url: "https://ak33m.com/index.xml",
 	})
 	if err != nil {
 		t.Fatalf("unexpected error initializing blog '%s'",err)
@@ -82,12 +82,12 @@ func TestBlogAddFeed(t *testing.T) {
 		t.Errorf("expected the blog title to be '%s', got '%s'","Akeem Philbert's Blog",blog.Title)
 	}
 
-	if len(blog.GetNewChanges()) != 11 {
-		t.Fatalf("expected %d events, got %d",11,len(blog.GetNewChanges()))
+	if len(blog.GetNewChanges()) != 12{
+		t.Fatalf("expected %d events, got %d",12,len(blog.GetNewChanges()))
 	}
 
 	//confirm that the author created event payload has blog id in it
-	authorCreatedEvent := blog.GetNewChanges()[1].(*weos.Event)
+	authorCreatedEvent := blog.GetNewChanges()[2].(*weos.Event)
 	if authorCreatedEvent.Type != blogaggregatormodule.AUTHOR_CREATED {
 		t.Errorf("expected the second event to be %s, got %s",blogaggregatormodule.AUTHOR_CREATED,authorCreatedEvent.Type)
 	}
@@ -109,7 +109,7 @@ func TestBlogAddFeed(t *testing.T) {
 	}
 
 	//confirm that the post created event payload has blog id in it
-	postCreatedEvent := blog.GetNewChanges()[2].(*weos.Event)
+	postCreatedEvent := blog.GetNewChanges()[3].(*weos.Event)
 	if postCreatedEvent.Type != blogaggregatormodule.POST_CREATED {
 		t.Errorf("expected the third event to be %s, got %s",blogaggregatormodule.POST_CREATED,postCreatedEvent.Type)
 	}
@@ -128,5 +128,9 @@ func TestBlogAddFeed(t *testing.T) {
 
 	if len(blog.Posts) != 9 {
 		t.Errorf("expected %d posts, got %d",9,len(blog.Posts))
+	}
+
+	if blog.URL != "https://ak33m.com" {
+		t.Errorf("expected the blog url to be '%s', got '%s'","https://ak33m.com",blog.URL)
 	}
 }
