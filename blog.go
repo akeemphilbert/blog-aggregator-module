@@ -47,7 +47,11 @@ func (b *Blog) Validate(blog *AddBlogRequest) error {
 func (b *Blog) AddFeed(feed *gofeed.Feed) error {
 	b.Title = feed.Title
 	for _,author := range feed.Authors {
-		event, err := weos.NewBasicEvent(AUTHOR_CREATED,GenerateID(),"Blog",author)
+		event, err := weos.NewBasicEvent(AUTHOR_CREATED,GenerateID(),"Blog",&AuthorCreatedPayload{
+			BlogID: b.ID,
+			Name: author.Name,
+			Email: author.Email,
+		})
 		if err != nil {
 			return err
 		}
@@ -56,7 +60,10 @@ func (b *Blog) AddFeed(feed *gofeed.Feed) error {
 	}
 
 	for _, post := range feed.Items {
-		event, err := weos.NewBasicEvent(POST_CREATED,GenerateID(),"Blog",post)
+		event, err := weos.NewBasicEvent(POST_CREATED,GenerateID(),"Blog",&PostCreatedPayload{
+			BlogID: b.ID,
+			Item: *post,
+		})
 		if err != nil {
 			return err
 		}
@@ -71,6 +78,7 @@ func (b *Blog) ApplyChanges (changes []*weos.Event) error {
 	for _, change := range changes {
 		switch change.Type {
 		case BLOG_ADDED:
+			b.ID = change.Meta.EntityID
 			err := json.Unmarshal(change.Payload, b)
 			if err != nil {
 				return err

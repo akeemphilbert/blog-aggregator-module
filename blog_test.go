@@ -1,6 +1,7 @@
 package blogaggregatormodule_test
 
 import (
+	"encoding/json"
 	"math/rand"
 	"os"
 	"testing"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/mmcdole/gofeed"
 	blogaggregatormodule "github.com/wepala/blog-aggregator-module"
+	"github.com/wepala/weos"
 )
 
 
@@ -26,6 +28,10 @@ func TestBlogCreate(t *testing.T) {
 	
 		if blog.URL != selectedURL {
 			t.Errorf("expected the blog url to be '%s', got '%s'",selectedURL,blog.URL)
+		}
+
+		if blog.ID == "" {
+			t.Errorf("expected the blog id to be set")
 		}
 	})
 
@@ -63,12 +69,48 @@ func TestBlogAddFeed(t *testing.T) {
 	}
 
 	if len(blog.GetNewChanges()) != 11 {
-		t.Errorf("expected %d events, got %d",11,len(blog.GetNewChanges()))
+		t.Fatalf("expected %d events, got %d",11,len(blog.GetNewChanges()))
 	}
+
+	//confirm that the author created event payload has blog id in it
+	authorCreatedEvent := blog.GetNewChanges()[1].(*weos.Event)
+	if authorCreatedEvent.Type != blogaggregatormodule.AUTHOR_CREATED {
+		t.Errorf("expected the second event to be %s, got %s",blogaggregatormodule.AUTHOR_CREATED,authorCreatedEvent.Type)
+	}
+	var authorCreatePayload struct {
+		BlogID string `json:"blogId"`
+	}
+	err = json.Unmarshal(authorCreatedEvent.Payload,&authorCreatePayload)
+	if err != nil {
+		t.Errorf("unexpected error un marshalling author create event %s",err)
+	}
+
+	if authorCreatePayload.BlogID != blog.ID {
+		t.Errorf("expected the blog id to be %s, got %s",blog.ID,authorCreatePayload.BlogID)
+	}
+
 
 	if len(blog.Authors) != 1 {
 		t.Errorf("expected %d author, got %d",1,len(blog.Authors))
 	}
+
+	//confirm that the post created event payload has blog id in it
+	postCreatedEvent := blog.GetNewChanges()[2].(*weos.Event)
+	if postCreatedEvent.Type != blogaggregatormodule.POST_CREATED {
+		t.Errorf("expected the third event to be %s, got %s",blogaggregatormodule.POST_CREATED,postCreatedEvent.Type)
+	}
+	var postCreatePayload struct {
+		BlogID string `json:"blogId"`
+	}
+	err = json.Unmarshal(postCreatedEvent.Payload,&postCreatePayload)
+	if err != nil {
+		t.Errorf("unexpected error un marshalling post create event %s",err)
+	}
+
+	if postCreatePayload.BlogID != blog.ID {
+		t.Errorf("expected the blog id to be %s, got %s",blog.ID,postCreatePayload.BlogID)
+	}
+
 
 	if len(blog.Posts) != 9 {
 		t.Errorf("expected %d posts, got %d",9,len(blog.Posts))
