@@ -56,10 +56,15 @@ func reset(*godog.Scenario) {
 	testUsers = make(map[string]*TestUser)
 	testBlogs = make(map[string]*TestBlog)
 	err = nil
-	currentID = ksuid.New().String()
+	currentID = ""
+	
 
 	blogaggregatormodule.GenerateID = func() string {
-		return currentID
+		id := ksuid.New().String()
+		if currentID == "" {
+			currentID = id
+		}
+		return id
 	}
 
 }
@@ -104,7 +109,7 @@ func followsTheBlog(arg1, arg2 string) error {
 func hasABlog(arg1, arg2 string) error {
 	if user, ok := testUsers[arg1]; ok {
 		user.Blog = &TestBlog{
-			Title: arg2,
+			URL: arg2,
 		}
 		testBlogs[arg2] = user.Blog
 		testBlog = user.Blog
@@ -264,6 +269,12 @@ func theBlogShouldBeAddedToTheAggregator() error {
 	if events[0].Type != blogaggregatormodule.BLOG_ADDED {
 		err = fmt.Errorf("expected the first event to be %s", blogaggregatormodule.BLOG_ADDED)
 	}
+	blog := &blogaggregatormodule.Blog{}
+	blog.ApplyChanges(events)
+
+	if blog.URL != testBlog.URL {
+		err = fmt.Errorf("expected the url to be '%s', got '%s'",testBlog.URL,blog.URL)
+	}
 	return err
 }
 
@@ -276,8 +287,8 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 	testFeed = `<?xml version="1.0" encoding="windows-1252"?><rss version="2.0">
 	  <channel>
 		<title>%s</title>
-		<description>RSS is a fascinating technology. The uses for RSS are expanding daily. Take a closer look at how various industries are using the benefits of RSS in their businesses.</description>
-		<link>http://www.feedforall.com/industry-solutions.htm</link>
+		<description>Recent content on Akeem Philbert&#39;s Blog</description>
+		<link>https://ak33m.com</link>
 		<category domain="www.dmoz.com">Computers/Software/Internet/Site Management/Content Management</category>
 		<copyright>Copyright 2021 Some Site</copyright>
 		<docs>http://blogs.law.harvard.edu/tech/rss</docs>
