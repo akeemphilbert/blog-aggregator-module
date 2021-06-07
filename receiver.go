@@ -3,11 +3,12 @@ package blogaggregatormodule
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/segmentio/ksuid"
 	"github.com/wepala/weos"
 )
 
-var GenerateID = func () string {
+var GenerateID = func() string {
 	return ksuid.New().String()
 }
 
@@ -18,11 +19,11 @@ type Receiver struct {
 
 func (r *Receiver) AddBlog(ctx context.Context, command *weos.Command) error {
 	var request *AddBlogRequest
-	err := json.Unmarshal(command.Payload,&request)
+	err := json.Unmarshal(command.Payload, &request)
 	if err != nil {
 		return err
 	}
-	blog, err :=r.blogService.AddBlog(request)
+	blog, err := r.blogService.AddBlog(request)
 	if err != nil {
 		return err
 	}
@@ -33,12 +34,12 @@ func (r *Receiver) AddBlog(ctx context.Context, command *weos.Command) error {
 func NewReceiver(application weos.Application) *Receiver {
 	return &Receiver{
 		application: application,
-		blogService: NewBlogService(application.HTTPClient(),application.EventRepository()),
+		blogService: NewBlogService(application.HTTPClient(), application.EventRepository()),
 	}
 }
 
 func Initialize(application weos.Application) error {
 	receiver := NewReceiver(application)
-	application.Dispatcher().AddSubscriber(AddBlogCommand(""),receiver.AddBlog)
+	application.Dispatcher().AddSubscriber(AddBlogCommand(""), receiver.AddBlog)
 	return nil
 }

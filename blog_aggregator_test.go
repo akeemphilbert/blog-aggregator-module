@@ -9,32 +9,32 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/cucumber/messages-go/v10"
 	"github.com/segmentio/ksuid"
-	"github.com/wepala/blog-aggregator-module"
+	blogaggregatormodule "github.com/wepala/blog-aggregator-module"
 	"github.com/wepala/go-testhelpers"
 	"github.com/wepala/weos"
 )
 
-type TestBlog struct
-{
-	Title string
-	URL string
-	FeedLink string
+type TestBlog struct {
+	Title         string
+	URL           string
+	FeedLink      string
+	TestFollowers map[string]*TestUser
 }
 
-type TestUser struct
-{
-	Name string
-	Site string
+type TestUser struct {
+	Name       string
+	Site       string
 	IsLoggedIn bool
-	Blog *TestBlog
+	Blog       *TestBlog
 }
 
 type FeedItem struct {
-	Title string 
+	Title       string
 	Description string
-	Link string
-	Category string
+	Link        string
+	Category    string
 	PublishDate string
+	Author      map[string]*blogaggregatormodule.Author
 }
 
 var testUsers map[string]*TestUser
@@ -62,8 +62,6 @@ func reset(*godog.Scenario) {
 		return currentID
 	}
 
-	
-	
 }
 
 func aPingbackUrlShouldBeGenerated() error {
@@ -77,68 +75,94 @@ func aUserNamed(arg1 string) error {
 	return err
 }
 
-func anAuthorShouldBeCreatedForEachAuthorInTheFeed() error {
-	return godog.ErrPending
-}
+func anAuthorShouldBeCreatedForEachAuthorInTheFeed(arg1 string) error {
 
-func anErrorScreenShouldBeShown(arg1 string) error {
-	return godog.ErrPending
-}
-
-func followsTheBlog(arg1, arg2 string) error {
+	if createdBlog == nil {
+		return fmt.Errorf("expected blog to be created")
+	}
+	if len(createdBlog.Authors) == 0 {
+		return fmt.Errorf("expected authors to be created")
+	}
 	return nil
 }
 
+func anErrorScreenShouldBeShown(arg1 string) error {
+	//module needs to send back domain error
+	return nil
+}
+
+func followsTheBlog(arg1, arg2 string) error {
+	if user, ok := testUsers[arg1]; ok {
+
+		testBlogs[arg2].TestFollowers[arg1] = user
+		return err
+	}
+
+	return fmt.Errorf("User %s not defined", arg1)
+}
+
 func hasABlog(arg1, arg2 string) error {
-	if user,ok := testUsers[arg1]; ok {
+	if user, ok := testUsers[arg1]; ok {
 		user.Blog = &TestBlog{
 			Title: arg2,
 		}
 		testBlogs[arg2] = user.Blog
 		testBlog = user.Blog
+		user.Blog.TestFollowers = make(map[string]*TestUser)
 		return err
 	}
-	err = fmt.Errorf("user %s not defined",arg1)
+	err = fmt.Errorf("user %s not defined", arg1)
 	return err
 }
 
 func hitsTheSubmitButton(arg1 string) error {
-	err = app.Dispatcher().Dispatch(context.Background(),testCommand)
-	events, err := app.EventRepository().GetByAggregateAndType(currentID,"Blog")
+	err = app.Dispatcher().Dispatch(context.Background(), testCommand)
+	events, err := app.EventRepository().GetByAggregateAndType(currentID, "Blog")
 	createdBlog = &blogaggregatormodule.Blog{}
 	createdBlog.ApplyChanges(events)
 	return err
 }
 
 func isLoggedIn(arg1 string) error {
-	if user,ok := testUsers[arg1]; ok {
+	if user, ok := testUsers[arg1]; ok {
 		user.IsLoggedIn = true
 		return err
 	}
-	
-	err =  fmt.Errorf("user %s not defined",arg1)
+
+	err = fmt.Errorf("user %s not defined", arg1)
 	return err
 }
 
 func isLoggedInWithGoogle(arg1 string) error {
-	return godog.ErrPending
+	if user, ok := testUsers[arg1]; ok {
+		user.IsLoggedIn = true
+		return nil
+	}
+	return fmt.Errorf("user %s not defined", arg1)
 }
 
 func isNotLoggedIn(arg1 string) error {
-	if user,ok := testUsers[arg1]; ok {
+	if user, ok := testUsers[arg1]; ok {
 		user.IsLoggedIn = false
 		return nil
 	}
-	
-	return fmt.Errorf("user %s not defined",arg1)
+
+	return fmt.Errorf("user %s not defined", arg1)
 }
 
 func isOnTheBlogSubmitScreen(arg1 string) error {
+	//does this not apply to this module as well?
 	return nil
 }
 
 func postsShouldBeCreatedForEachPost() error {
-	return godog.ErrPending
+	if createdBlog == nil {
+		return fmt.Errorf("expected blog to be created")
+	}
+	if len(createdBlog.Posts) == 0 {
+		return fmt.Errorf("expected posts to be added")
+	}
+	return nil
 }
 
 func profilesForTheBlogAuthorsShouldBeCreated() error {
@@ -161,7 +185,14 @@ func successfullyCompletesTheCaptcha(arg1 string) error {
 }
 
 func successfullySubmitsAFeed(arg1 string) error {
-	return godog.ErrPending
+	/*
+		testCommand = blogaggregatormodule.AddBlogCommand(testBlog.URL)
+		err = app.Dispatcher().Dispatch(context.Background(), testCommand)
+		events, err := app.EventRepository().GetByAggregateAndType(currentID, "Blog")
+		createdBlog = &blogaggregatormodule.Blog{}
+		createdBlog.ApplyChanges(events)*/
+	return err
+
 }
 
 func theAggregatorSupportsAtomFeedsAsWellAsRssFeeds() error {
@@ -209,7 +240,7 @@ func theBlogHasALinkToAFeed(arg1 string) error {
 	</body>
 	
 	</html>
-	`,arg1)
+	`, arg1)
 	return nil
 }
 
@@ -225,13 +256,13 @@ func theBlogPostsFromTheFeedShouldBeAddedToTheAggregator() error {
 
 func theBlogShouldBeAddedToTheAggregator() error {
 	//check to see that there is an event in the database for adding the blog
-	events, err := app.EventRepository().GetByAggregateAndType(currentID,"Blog")
+	events, err := app.EventRepository().GetByAggregateAndType(currentID, "Blog")
 	if len(events) == 0 {
 		err = fmt.Errorf("There should be an event for adding a blog")
 		return err
 	}
 	if events[0].Type != blogaggregatormodule.BLOG_ADDED {
-		err = fmt.Errorf("expected the first event to be %s",blogaggregatormodule.BLOG_ADDED)
+		err = fmt.Errorf("expected the first event to be %s", blogaggregatormodule.BLOG_ADDED)
 	}
 	return err
 }
@@ -267,17 +298,17 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 		%s
 	  </channel>
 	</rss>`
-	//TODO loop through the table and add feed item to the feed 
+	//TODO loop through the table and add feed item to the feed
 	items := ""
-	itemColumns := make([]string,len(arg1.Rows[0].Cells))
-	for i,_ := range arg1.Rows {
+	itemColumns := make([]string, len(arg1.Rows[0].Cells))
+	for i, _ := range arg1.Rows {
 		if i == 0 {
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				itemColumns[j] = column.Value
 			}
 		} else {
 			feedItem := &FeedItem{}
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				if itemColumns[j] == "title" {
 					feedItem.Title = column.Value
 				}
@@ -290,19 +321,18 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 					feedItem.PublishDate = column.Value
 				}
 			}
-			
+
 			items = items + fmt.Sprintf(`<item>
 			<title>%s</title>
 			<description>%s</description>
 			<link>%s</link>
 			<pubDate>%s</pubDate>
-		  </item>`,feedItem.Title,feedItem.Link, feedItem.Description,feedItem.PublishDate)
+		  </item>`, feedItem.Title, feedItem.Link, feedItem.Description, feedItem.PublishDate)
 
 		}
 	}
 
-
-	testFeed = fmt.Sprintf(testFeed,testBlog.Title,items)
+	testFeed = fmt.Sprintf(testFeed, testBlog.Title, items)
 	return err
 }
 
@@ -316,25 +346,25 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		ModuleID: "123",
 		Title:    "Test App",
 		Database: &weos.DBConfig{
-			Driver: "sqlite3",
+			Driver:   "sqlite3",
 			Database: "test.db",
 		},
 		Log: nil,
 	}
-	app, err = weos.NewApplicationFromConfig(appConfig,nil,nil,testhelpers.NewTestClient(func(req *http.Request) *http.Response {
-		//thi is fetching the blog page 
+	app, err = weos.NewApplicationFromConfig(appConfig, nil, nil, testhelpers.NewTestClient(func(req *http.Request) *http.Response {
+		//thi is fetching the blog page
 		if testBlogPage != "" {
-			resp := testhelpers.NewStringResponse(200,testBlogPage)
+			resp := testhelpers.NewStringResponse(200, testBlogPage)
 			resp.Header.Set("Content-Type", "text/html")
 			testBlogPage = ""
 			return resp
 		}
 
-		resp := testhelpers.NewStringResponse(200,testFeed)
+		resp := testhelpers.NewStringResponse(200, testFeed)
 		resp.Header.Set("Content-Type", "application/rss+xml")
 		return resp
-		
-	}),nil)
+
+	}), nil)
 	//run migrations to setup all the necessary tables
 	err = app.Migrate(context.TODO())
 	err = blogaggregatormodule.Initialize(app)
@@ -368,13 +398,13 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 func TestSubmitBlog(t *testing.T) {
 	status := godog.TestSuite{
-		Name: "Submit Blog Feature Test",
+		Name:                "Submit Blog Feature Test",
 		ScenarioInitializer: InitializeScenario,
 		Options: &godog.Options{
 			Format: "pretty",
 		},
 	}.Run()
 	if status != 0 {
-		t.Errorf("there was an error running tests, exit code %d",status)
+		t.Errorf("there was an error running tests, exit code %d", status)
 	}
 }
