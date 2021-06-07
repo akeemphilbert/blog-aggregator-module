@@ -5,6 +5,7 @@ import "github.com/mmcdole/gofeed"
 type AddBlogRequest struct {
 	Url string `json:"url"`
 }
+
 type BlogCreatedPayload struct {
 	Blog
 }
@@ -17,3 +18,4 @@ type PostCreatedPayload struct {
 	gofeed.Item
 	BlogID string `json:"blogId"`
 }
+
