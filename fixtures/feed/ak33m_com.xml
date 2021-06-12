@@ -16,6 +16,8 @@
       
       <guid>https://ak33m.com/posts/its-over-magento/</guid>
       <description>So I&amp;rsquo;ve always had a hate-hate relationship with Magento (there never was love). Ours was a convenient relationship; I needed something to run an online bookstore we wanted to start, and all the other solutions we looked at didn&amp;rsquo;t fit the bill. We wanted to accept payments in Trinidad and Tobago dollars, something you don&amp;rsquo;t get easier with hosted solutions. We also wanted something that had broad support and a variety of templates.</description>
+      <category>php</category>
+      <category>e-commerce</category>
     </item>
     
     <item>
@@ -28,6 +30,7 @@
 The technologies used in the app include:
   React Native - mobile development
   Redux - state management</description>
+      <category>php</category>
     </item>
     
     <item>
@@ -37,6 +40,7 @@ The technologies used in the app include:
       
       <guid>https://ak33m.com/posts/easter-egg-hunt/</guid>
       <description>It&amp;rsquo;s Easter, and my family and I usually host an Easter Egg Hunt for the kids. Currently, because of COVID-19 strict social distancing guidelines are being followed, and we plan to have a small hunt with our kids this year. On Saturday (April 4th), I thought it would be a great idea to create an Augmented Reality Easter Egg Hunt where a &amp;ldquo;bunny&amp;rdquo; would place eggs using the app, and participants can find the eggs using the app.</description>
+      <category>ar</category>
     </item>
     
     <item>

@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/messages-go/v10"
@@ -33,7 +36,7 @@ type FeedItem struct {
 	Title string 
 	Description string
 	Link string
-	Category string
+	Categories []string
 	PublishDate string
 }
 
@@ -42,7 +45,9 @@ var testBlogs map[string]*TestBlog
 var testBlog *TestBlog
 var testBlogPage string
 var testFeed string
+var testFeedItems []*FeedItem
 var testCommand *weos.Command
+var blogsFixture map[string]*blogaggregatormodule.Blog
 var app *weos.BaseApplication
 var err error
 var currentID string
@@ -55,6 +60,7 @@ func reset(*godog.Scenario) {
 	testCommand = nil
 	testUsers = make(map[string]*TestUser)
 	testBlogs = make(map[string]*TestBlog)
+	blogsFixture = make(map[string]*blogaggregatormodule.Blog)
 	err = nil
 	currentID = ""
 	
@@ -225,6 +231,28 @@ func theBlogPostsFromTheFeedShouldBeAddedToTheAggregator() error {
 	if len(createdBlog.Posts) == 0 {
 		return fmt.Errorf("expected posts to be added")
 	}
+	
+	for i,_ := range createdBlog.Posts {
+		if createdBlog.Posts[i].Title != testFeedItems[i].Title {
+			return fmt.Errorf("expected the post title to be '%s', got '%s'",testFeedItems[i].Title,createdBlog.Posts[i].Title)
+		}
+
+		loc, err := time.LoadLocation("America/Port_of_Spain")
+		if err != nil {
+			return err
+		}
+
+		if createdBlog.Posts[i].PublishDate.In(loc).Format("Mon, 2 Jan 2006 15:04:05 -0700") != testFeedItems[i].PublishDate {
+			return fmt.Errorf("expected the post publish date to be '%s', got '%s'",testFeedItems[i].PublishDate,createdBlog.Posts[i].PublishDate.In(loc).Format("Mon, 2 Jan 2006 15:04:05 -0700"))
+		}
+
+		for j,_ := range testFeedItems[i].Categories {
+			if createdBlog.Posts[i].Tags[j] != testFeedItems[i].Categories[j] {
+				return fmt.Errorf("expected the tag in position %d to be %s, got %s",j,testFeedItems[i].Categories[j],createdBlog.Posts[i].Tags[j])
+			}
+		}
+	}
+	
 	return nil
 }
 
@@ -300,14 +328,24 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 				if itemColumns[j] == "publish date" {
 					feedItem.PublishDate = column.Value
 				}
+
+				if itemColumns[j] == "tags" {
+					feedItem.Categories = strings.Split(column.Value,",")
+				}
 			}
-			
+			testFeedItems = append(testFeedItems, feedItem)
+			var categories string
+			//create list of categories to add to rss item
+			for _,categoryString := range feedItem.Categories {
+				categories += fmt.Sprintf(`<category>%s</category>`,categoryString)
+			}
 			items = items + fmt.Sprintf(`<item>
 			<title>%s</title>
 			<description>%s</description>
 			<link>%s</link>
 			<pubDate>%s</pubDate>
-		  </item>`,feedItem.Title,feedItem.Link, feedItem.Description,feedItem.PublishDate)
+			%s
+		  </item>`,feedItem.Title,feedItem.Link, feedItem.Description,feedItem.PublishDate,categories)
 
 		}
 	}
@@ -319,6 +357,133 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 
 func theUrlIsEntered(arg1 string) error {
 	testCommand = blogaggregatormodule.AddBlogCommand(arg1)
+	return nil
+}
+
+func aUserMarcus() error {
+	testUsers["Marcus"] = &TestUser{
+		Name: "Marcus",
+	}
+	return nil
+}
+
+func marcusHasPermissionsToViewBlogPosts() error {
+	return nil
+}
+
+func marcusSelectsABlogWithId(arg1 string) error {
+	var ok bool
+	if createdBlog,ok  = blogsFixture[arg1]; !ok {
+		return fmt.Errorf("blog '%s' does not exist",arg1)
+	}
+	return nil
+}
+
+func marcusSelectsACategory(arg1 string) error {
+	return nil
+}
+
+func marcusShouldSeeAListOfBlogPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
+	return nil
+}
+
+func marcusShouldSeePostsDaysFromTheCurrentDate(arg1 int) error {
+	return nil
+}
+
+func marcusViewsPostsByHighestViews() error {
+	return nil
+}
+
+func marcusViewsRecentPosts() error {
+	return nil
+}
+
+func theAggregatorHasBlogs(arg1 *messages.PickleStepArgument_PickleTable) error {
+	itemColumns := make([]string,len(arg1.Rows[0].Cells))
+	for i,_ := range arg1.Rows {
+		if i == 0 {
+			for j,column := range arg1.Rows[i].Cells {
+				itemColumns[j] = column.Value
+			}
+		} else {
+			item := &blogaggregatormodule.Blog{}
+			for j,column := range arg1.Rows[i].Cells {
+				if itemColumns[j] == "title" {
+					item.Title = column.Value
+				}
+
+				if itemColumns[j] == "url" {
+					item.URL = column.Value
+				}
+
+				if itemColumns[j] == "feedUrl" {
+					item.FeedURL = column.Value
+				}
+
+				if itemColumns[j] == "id" {
+					item.ID = column.Value
+				}
+			}
+			blogsFixture[item.ID] = item
+		}
+	}
+	return nil
+}
+
+func theAggregatorHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
+	itemColumns := make([]string,len(arg1.Rows[0].Cells))
+	for i,_ := range arg1.Rows {
+		if i == 0 {
+			for j,column := range arg1.Rows[i].Cells {
+				itemColumns[j] = column.Value
+			}
+		} else {
+			item := &blogaggregatormodule.Post{}
+			var blogId string
+			var blog *blogaggregatormodule.Blog
+			var ok bool
+			for j,column := range arg1.Rows[i].Cells {
+				if itemColumns[j] == "title" {
+					item.Title = column.Value
+				}
+
+				if itemColumns[j] == "blogId" {
+					blogId = column.Value
+				}
+
+				if itemColumns[j] == "description" {
+					item.Description = column.Value
+				}
+
+				if itemColumns[j] == "tags" {
+					item.Tags = strings.Split(column.Value,",")
+				}
+
+				if itemColumns[j] == "publishDate" {
+					item.PublishDate, err = time.Parse(time.RFC822,column.Value)
+				}
+
+				if itemColumns[j] == "views" {
+					item.Views, err = strconv.Atoi(column.Value)
+				}
+
+				if itemColumns[j] == "id" {
+					item.ID = column.Value
+				}
+			}
+			if blog,ok = blogsFixture[blogId]; !ok {
+				return fmt.Errorf("trying to add posts to blog %s that doesn't exist",blogId)
+			}
+
+			blog.Posts = append(blog.Posts, item)
+		}
+	}
+
+	return err
+}
+
+func theCurrentDateIs(arg1 string) error {
 	return nil
 }
 
@@ -375,6 +540,17 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the feed details should be extracted$`, theFeedDetailsShouldBeExtracted)
 	ctx.Step(`^the feed has posts$`, theFeedHasPosts)
 	ctx.Step(`^the url "([^"]*)" is entered$`, theUrlIsEntered)
+	ctx.Step(`^a user Marcus$`, aUserMarcus)
+	ctx.Step(`^Marcus has permissions to view blog posts$`, marcusHasPermissionsToViewBlogPosts)
+	ctx.Step(`^Marcus selects a blog with id "([^"]*)"$`, marcusSelectsABlogWithId)
+	ctx.Step(`^Marcus selects a category "([^"]*)"$`, marcusSelectsACategory)
+	ctx.Step(`^Marcus should see a list of blog posts$`, marcusShouldSeeAListOfBlogPosts)
+	ctx.Step(`^Marcus should see posts (\d+) days from the current date$`, marcusShouldSeePostsDaysFromTheCurrentDate)
+	ctx.Step(`^Marcus views posts by highest views$`, marcusViewsPostsByHighestViews)
+	ctx.Step(`^Marcus views recent posts$`, marcusViewsRecentPosts)
+	ctx.Step(`^the aggregator has blogs$`, theAggregatorHasBlogs)
+	ctx.Step(`^the aggregator has posts$`, theAggregatorHasPosts)
+	ctx.Step(`^The current date is "([^"]*)"$`, theCurrentDateIs)
 }
 
 func TestSubmitBlog(t *testing.T) {

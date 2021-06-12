@@ -2,6 +2,8 @@ package blogaggregatormodule
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/mmcdole/gofeed"
 	"github.com/wepala/weos"
 )
@@ -12,9 +14,13 @@ type Author struct {
 }
 
 type Post struct {
+	weos.BasicEntity
 	Title string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
 	Content string `json:"content,omitempty"`
+	Tags []string `json:"categories,omitempty"`
+	PublishDate time.Time `json:"publishedParsed,omitempty"`
+	Views int `json:"views"`
 }
 type Blog struct {
 	weos.AggregateRoot
