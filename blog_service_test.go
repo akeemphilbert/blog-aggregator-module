@@ -21,7 +21,7 @@ func TestBlogServiceCreate_BasicBlog(t *testing.T) {
 				t.Fatalf("error setting up test fixtures '%s'",err)
 			}
 			resp := testhelpers.NewBytesResponse(200,content)
-			resp.Header.Set("Content-Type", "text/html")
+			resp.Header.Set("Content-Type", "text/html; charset=utf-8")
 			return resp
 		}
 

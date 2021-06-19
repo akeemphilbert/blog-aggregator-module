@@ -3,6 +3,7 @@ package blogaggregatormodule
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/mmcdole/gofeed"
 	"github.com/wepala/weos"
@@ -26,7 +27,7 @@ func (b *BlogService) AddBlog(blogRequest *AddBlogRequest) (*Blog, error) {
 		return nil, weos.NewDomainError(fmt.Sprintf("Unable to fetch feed '%s'",blog.URL),"Blog",blog.ID,err)
 	}
 	//if it's html let's get the feed link and get the feed information
-	if response.Header.Get("Content-Type") == "text/html" || response.Header.Get("Content-Type") == "application/xhtml+xml" {
+	if strings.Contains(response.Header.Get("Content-Type"), "text/html") || strings.Contains(response.Header.Get("Content-Type"),"application/xhtml+xml") {
 		feedURL = GetFeedLink(blog.URL,response.Body)
 		if feedURL != "" {
 			response.Body.Close()
