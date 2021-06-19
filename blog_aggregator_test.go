@@ -93,7 +93,11 @@ func anAuthorShouldBeCreatedForEachAuthorInTheFeed() error {
 }
 
 func anErrorScreenShouldBeShown(arg1 string) error {
-	return godog.ErrPending
+	if err == nil {
+		return fmt.Errorf("expected an error to be returned")
+	}
+
+	return nil
 }
 
 func followsTheBlog(arg1, arg2 string) error {
@@ -498,7 +502,13 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		Log: nil,
 	}
 	app, err = weos.NewApplicationFromConfig(appConfig,nil,nil,testhelpers.NewTestClient(func(req *http.Request) *http.Response {
-		//thi is fetching the blog page 
+		if req.URL.Host == "google.com" {
+			resp := testhelpers.NewStringResponse(200,"<html><body>Not Blog</body></html>")
+			resp.Header.Set("Content-Type", "text/html")
+			return resp 
+		}
+
+		//this is fetching the blog page 
 		if testBlogPage != "" {
 			resp := testhelpers.NewStringResponse(200,testBlogPage)
 			resp.Header.Set("Content-Type", "text/html")
@@ -553,7 +563,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^The current date is "([^"]*)"$`, theCurrentDateIs)
 }
 
-func TestSubmitBlog(t *testing.T) {
+func TestBDD(t *testing.T) {
 	status := godog.TestSuite{
 		Name: "Submit Blog Feature Test",
 		ScenarioInitializer: InitializeScenario,
