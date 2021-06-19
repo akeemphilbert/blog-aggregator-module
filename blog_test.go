@@ -114,6 +114,7 @@ func TestBlogAddFeed(t *testing.T) {
 		t.Errorf("expected the third event to be %s, got %s",blogaggregatormodule.POST_CREATED,postCreatedEvent.Type)
 	}
 	var postCreatePayload struct {
+		gofeed.Item
 		BlogID string `json:"blogId"`
 	}
 	err = json.Unmarshal(postCreatedEvent.Payload,&postCreatePayload)
@@ -123,6 +124,10 @@ func TestBlogAddFeed(t *testing.T) {
 
 	if postCreatePayload.BlogID != blog.ID {
 		t.Errorf("expected the blog id to be %s, got %s",blog.ID,postCreatePayload.BlogID)
+	}
+
+	if postCreatePayload.Published != "Sat, 27 Mar 2021 17:05:53 -0400" {
+		t.Errorf("expected published date to be '%s', got '%s'","Sat, 27 Mar 2021 17:05:53 -0400",postCreatePayload.Published)
 	}
 
 

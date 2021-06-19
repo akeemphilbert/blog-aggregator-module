@@ -10,7 +10,7 @@ func TestGetFeedLink (t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading fixtures '%s'",err)
 	}
-	link := GetFeedLink(content)
+	link := GetFeedLink("https://ak33m.com",content)
 	if link != "https://ak33m.com/index.xml" {
 		t.Errorf("expected the link to be '%s', got '%s'","https://ak33m.com/index.xml",link)
 	}

@@ -2,11 +2,12 @@ package blogaggregatormodule
 
 import (
 	"io"
+	"net/url"
 
 	"golang.org/x/net/html"
 )
 
-func GetFeedLink(body io.Reader) string {
+func GetFeedLink(baseUrl string,body io.Reader) string {
 	tokenizer := html.NewTokenizer(body)
 		for {
 			tt := tokenizer.Next()
@@ -26,6 +27,14 @@ func GetFeedLink(body io.Reader) string {
 					
 						if attr.Key == "href" {
 							href = attr.Val
+							turl, err := url.Parse(href)
+							if err != nil {
+								return ""
+							}
+							//it's a relative link
+							if turl.Host == "" {
+								href = baseUrl + href
+							}
 						}
 					}
 					if isFeedLink {

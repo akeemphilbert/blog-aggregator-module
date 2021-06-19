@@ -27,7 +27,7 @@ func (b *BlogService) AddBlog(blogRequest *AddBlogRequest) (*Blog, error) {
 	}
 	//if it's html let's get the feed link and get the feed information
 	if response.Header.Get("Content-Type") == "text/html" || response.Header.Get("Content-Type") == "application/xhtml+xml" {
-		feedURL = GetFeedLink(response.Body)
+		feedURL = GetFeedLink(blog.URL,response.Body)
 		if feedURL != "" {
 			response.Body.Close()
 			response,err = b.client.Get(feedURL)
