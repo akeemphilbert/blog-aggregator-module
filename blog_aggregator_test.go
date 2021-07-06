@@ -17,26 +17,24 @@ import (
 	"github.com/wepala/weos"
 )
 
-type TestBlog struct
-{
-	Title string
-	URL string
+type TestBlog struct {
+	Title    string
+	URL      string
 	FeedLink string
 }
 
-type TestUser struct
-{
-	Name string
-	Site string
+type TestUser struct {
+	Name       string
+	Site       string
 	IsLoggedIn bool
-	Blog *TestBlog
+	Blog       *TestBlog
 }
 
 type FeedItem struct {
-	Title string 
+	Title       string
 	Description string
-	Link string
-	Categories []string
+	Link        string
+	Categories  []string
 	PublishDate string
 }
 
@@ -63,7 +61,6 @@ func reset(*godog.Scenario) {
 	blogsFixture = make(map[string]*blogaggregatormodule.Blog)
 	err = nil
 	currentID = ""
-	
 
 	blogaggregatormodule.GenerateID = func() string {
 		id := ksuid.New().String()
@@ -73,8 +70,6 @@ func reset(*godog.Scenario) {
 		return id
 	}
 
-	
-	
 }
 
 func aPingbackUrlShouldBeGenerated() error {
@@ -105,7 +100,7 @@ func followsTheBlog(arg1, arg2 string) error {
 }
 
 func hasABlog(arg1, arg2 string) error {
-	if user,ok := testUsers[arg1]; ok {
+	if user, ok := testUsers[arg1]; ok {
 		user.Blog = &TestBlog{
 			URL: arg2,
 		}
@@ -113,25 +108,25 @@ func hasABlog(arg1, arg2 string) error {
 		testBlog = user.Blog
 		return err
 	}
-	err = fmt.Errorf("user %s not defined",arg1)
+	err = fmt.Errorf("user %s not defined", arg1)
 	return err
 }
 
 func hitsTheSubmitButton(arg1 string) error {
-	err = app.Dispatcher().Dispatch(context.Background(),testCommand)
-	events, err := app.EventRepository().GetByAggregateAndType(currentID,"Blog")
+	err = app.Dispatcher().Dispatch(context.Background(), testCommand)
+	events, err := app.EventRepository().GetByAggregateAndType(currentID, "Blog")
 	createdBlog = &blogaggregatormodule.Blog{}
 	createdBlog.ApplyChanges(events)
 	return err
 }
 
 func isLoggedIn(arg1 string) error {
-	if user,ok := testUsers[arg1]; ok {
+	if user, ok := testUsers[arg1]; ok {
 		user.IsLoggedIn = true
 		return err
 	}
-	
-	err =  fmt.Errorf("user %s not defined",arg1)
+
+	err = fmt.Errorf("user %s not defined", arg1)
 	return err
 }
 
@@ -140,12 +135,12 @@ func isLoggedInWithGoogle(arg1 string) error {
 }
 
 func isNotLoggedIn(arg1 string) error {
-	if user,ok := testUsers[arg1]; ok {
+	if user, ok := testUsers[arg1]; ok {
 		user.IsLoggedIn = false
 		return nil
 	}
-	
-	return fmt.Errorf("user %s not defined",arg1)
+
+	return fmt.Errorf("user %s not defined", arg1)
 }
 
 func isOnTheBlogSubmitScreen(arg1 string) error {
@@ -224,7 +219,7 @@ func theBlogHasALinkToAFeed(arg1 string) error {
 	</body>
 	
 	</html>
-	`,arg1)
+	`, arg1)
 	return nil
 }
 
@@ -235,10 +230,10 @@ func theBlogPostsFromTheFeedShouldBeAddedToTheAggregator() error {
 	if len(createdBlog.Posts) == 0 {
 		return fmt.Errorf("expected posts to be added")
 	}
-	
-	for i,_ := range createdBlog.Posts {
+
+	for i, _ := range createdBlog.Posts {
 		if createdBlog.Posts[i].Title != testFeedItems[i].Title {
-			return fmt.Errorf("expected the post title to be '%s', got '%s'",testFeedItems[i].Title,createdBlog.Posts[i].Title)
+			return fmt.Errorf("expected the post title to be '%s', got '%s'", testFeedItems[i].Title, createdBlog.Posts[i].Title)
 		}
 
 		loc, err := time.LoadLocation("America/Port_of_Spain")
@@ -247,34 +242,39 @@ func theBlogPostsFromTheFeedShouldBeAddedToTheAggregator() error {
 		}
 
 		if createdBlog.Posts[i].PublishDate.In(loc).Format("Mon, 2 Jan 2006 15:04:05 -0700") != testFeedItems[i].PublishDate {
-			return fmt.Errorf("expected the post publish date to be '%s', got '%s'",testFeedItems[i].PublishDate,createdBlog.Posts[i].PublishDate.In(loc).Format("Mon, 2 Jan 2006 15:04:05 -0700"))
+			return fmt.Errorf("expected the post publish date to be '%s', got '%s'", testFeedItems[i].PublishDate, createdBlog.Posts[i].PublishDate.In(loc).Format("Mon, 2 Jan 2006 15:04:05 -0700"))
 		}
 
-		for j,_ := range testFeedItems[i].Categories {
+		//ensure that the feed items are not empty to be sure we're not getting a false positive
+		if len(testFeedItems[i].Categories) == 0 {
+			return fmt.Errorf("expect the test posts to have categories associated")
+		}
+
+		for j, _ := range testFeedItems[i].Categories {
 			if createdBlog.Posts[i].Tags[j] != testFeedItems[i].Categories[j] {
-				return fmt.Errorf("expected the tag in position %d to be %s, got %s",j,testFeedItems[i].Categories[j],createdBlog.Posts[i].Tags[j])
+				return fmt.Errorf("expected the tag in position %d to be %s, got %s", j, testFeedItems[i].Categories[j], createdBlog.Posts[i].Tags[j])
 			}
 		}
 	}
-	
+
 	return nil
 }
 
 func theBlogShouldBeAddedToTheAggregator() error {
 	//check to see that there is an event in the database for adding the blog
-	events, err := app.EventRepository().GetByAggregateAndType(currentID,"Blog")
+	events, err := app.EventRepository().GetByAggregateAndType(currentID, "Blog")
 	if len(events) == 0 {
 		err = fmt.Errorf("There should be an event for adding a blog")
 		return err
 	}
 	if events[0].Type != blogaggregatormodule.BLOG_ADDED {
-		err = fmt.Errorf("expected the first event to be %s",blogaggregatormodule.BLOG_ADDED)
+		err = fmt.Errorf("expected the first event to be %s", blogaggregatormodule.BLOG_ADDED)
 	}
 	blog := &blogaggregatormodule.Blog{}
 	blog.ApplyChanges(events)
 
 	if blog.URL != testBlog.URL {
-		err = fmt.Errorf("expected the url to be '%s', got '%s'",testBlog.URL,blog.URL)
+		err = fmt.Errorf("expected the url to be '%s', got '%s'", testBlog.URL, blog.URL)
 	}
 	return err
 }
@@ -310,17 +310,17 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 		%s
 	  </channel>
 	</rss>`
-	//TODO loop through the table and add feed item to the feed 
+	//TODO loop through the table and add feed item to the feed
 	items := ""
-	itemColumns := make([]string,len(arg1.Rows[0].Cells))
-	for i,_ := range arg1.Rows {
+	itemColumns := make([]string, len(arg1.Rows[0].Cells))
+	for i, _ := range arg1.Rows {
 		if i == 0 {
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				itemColumns[j] = column.Value
 			}
 		} else {
 			feedItem := &FeedItem{}
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				if itemColumns[j] == "title" {
 					feedItem.Title = column.Value
 				}
@@ -334,14 +334,14 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 				}
 
 				if itemColumns[j] == "tags" {
-					feedItem.Categories = strings.Split(column.Value,",")
+					feedItem.Categories = strings.Split(column.Value, ",")
 				}
 			}
 			testFeedItems = append(testFeedItems, feedItem)
 			var categories string
 			//create list of categories to add to rss item
-			for _,categoryString := range feedItem.Categories {
-				categories += fmt.Sprintf(`<category>%s</category>`,categoryString)
+			for _, categoryString := range feedItem.Categories {
+				categories += fmt.Sprintf(`<category>%s</category>`, categoryString)
 			}
 			items = items + fmt.Sprintf(`<item>
 			<title>%s</title>
@@ -349,13 +349,12 @@ func theFeedHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
 			<link>%s</link>
 			<pubDate>%s</pubDate>
 			%s
-		  </item>`,feedItem.Title,feedItem.Link, feedItem.Description,feedItem.PublishDate,categories)
+		  </item>`, feedItem.Title, feedItem.Link, feedItem.Description, feedItem.PublishDate, categories)
 
 		}
 	}
 
-
-	testFeed = fmt.Sprintf(testFeed,testBlog.Title,items)
+	testFeed = fmt.Sprintf(testFeed, testBlog.Title, items)
 	return err
 }
 
@@ -377,8 +376,8 @@ func marcusHasPermissionsToViewBlogPosts() error {
 
 func marcusSelectsABlogWithId(arg1 string) error {
 	var ok bool
-	if createdBlog,ok  = blogsFixture[arg1]; !ok {
-		return fmt.Errorf("blog '%s' does not exist",arg1)
+	if createdBlog, ok = blogsFixture[arg1]; !ok {
+		return fmt.Errorf("blog '%s' does not exist", arg1)
 	}
 	return nil
 }
@@ -404,15 +403,15 @@ func marcusViewsRecentPosts() error {
 }
 
 func theAggregatorHasBlogs(arg1 *messages.PickleStepArgument_PickleTable) error {
-	itemColumns := make([]string,len(arg1.Rows[0].Cells))
-	for i,_ := range arg1.Rows {
+	itemColumns := make([]string, len(arg1.Rows[0].Cells))
+	for i, _ := range arg1.Rows {
 		if i == 0 {
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				itemColumns[j] = column.Value
 			}
 		} else {
 			item := &blogaggregatormodule.Blog{}
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				if itemColumns[j] == "title" {
 					item.Title = column.Value
 				}
@@ -436,10 +435,10 @@ func theAggregatorHasBlogs(arg1 *messages.PickleStepArgument_PickleTable) error 
 }
 
 func theAggregatorHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error {
-	itemColumns := make([]string,len(arg1.Rows[0].Cells))
-	for i,_ := range arg1.Rows {
+	itemColumns := make([]string, len(arg1.Rows[0].Cells))
+	for i, _ := range arg1.Rows {
 		if i == 0 {
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				itemColumns[j] = column.Value
 			}
 		} else {
@@ -447,7 +446,7 @@ func theAggregatorHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error 
 			var blogId string
 			var blog *blogaggregatormodule.Blog
 			var ok bool
-			for j,column := range arg1.Rows[i].Cells {
+			for j, column := range arg1.Rows[i].Cells {
 				if itemColumns[j] == "title" {
 					item.Title = column.Value
 				}
@@ -461,11 +460,11 @@ func theAggregatorHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error 
 				}
 
 				if itemColumns[j] == "tags" {
-					item.Tags = strings.Split(column.Value,",")
+					item.Tags = strings.Split(column.Value, ",")
 				}
 
 				if itemColumns[j] == "publishDate" {
-					item.PublishDate, err = time.Parse(time.RFC822,column.Value)
+					item.PublishDate, err = time.Parse(time.RFC822, column.Value)
 				}
 
 				if itemColumns[j] == "views" {
@@ -476,8 +475,8 @@ func theAggregatorHasPosts(arg1 *messages.PickleStepArgument_PickleTable) error 
 					item.ID = column.Value
 				}
 			}
-			if blog,ok = blogsFixture[blogId]; !ok {
-				return fmt.Errorf("trying to add posts to blog %s that doesn't exist",blogId)
+			if blog, ok = blogsFixture[blogId]; !ok {
+				return fmt.Errorf("trying to add posts to blog %s that doesn't exist", blogId)
 			}
 
 			blog.Posts = append(blog.Posts, item)
@@ -491,36 +490,40 @@ func theCurrentDateIs(arg1 string) error {
 	return nil
 }
 
+func theBlogPostTagsShouldBeAddedToTheGlobalListOfTags() error {
+	return nil
+}
+
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	appConfig := &weos.ApplicationConfig{
 		ModuleID: "123",
 		Title:    "Test App",
 		Database: &weos.DBConfig{
-			Driver: "sqlite3",
+			Driver:   "sqlite3",
 			Database: "test.db",
 		},
 		Log: nil,
 	}
-	app, err = weos.NewApplicationFromConfig(appConfig,nil,nil,testhelpers.NewTestClient(func(req *http.Request) *http.Response {
+	app, err = weos.NewApplicationFromConfig(appConfig, nil, nil, testhelpers.NewTestClient(func(req *http.Request) *http.Response {
 		if req.URL.Host == "google.com" {
-			resp := testhelpers.NewStringResponse(200,"<html><body>Not Blog</body></html>")
+			resp := testhelpers.NewStringResponse(200, "<html><body>Not Blog</body></html>")
 			resp.Header.Set("Content-Type", "text/html")
-			return resp 
+			return resp
 		}
 
-		//this is fetching the blog page 
+		//this is fetching the blog page
 		if testBlogPage != "" {
-			resp := testhelpers.NewStringResponse(200,testBlogPage)
+			resp := testhelpers.NewStringResponse(200, testBlogPage)
 			resp.Header.Set("Content-Type", "text/html")
 			testBlogPage = ""
 			return resp
 		}
 
-		resp := testhelpers.NewStringResponse(200,testFeed)
+		resp := testhelpers.NewStringResponse(200, testFeed)
 		resp.Header.Set("Content-Type", "application/rss+xml")
 		return resp
-		
-	}),nil)
+
+	}), nil)
 	//run migrations to setup all the necessary tables
 	err = app.Migrate(context.TODO())
 	err = blogaggregatormodule.Initialize(app)
@@ -561,17 +564,18 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the aggregator has blogs$`, theAggregatorHasBlogs)
 	ctx.Step(`^the aggregator has posts$`, theAggregatorHasPosts)
 	ctx.Step(`^The current date is "([^"]*)"$`, theCurrentDateIs)
+	ctx.Step(`^the blog post tags should be added to the global list of tags$`, theBlogPostTagsShouldBeAddedToTheGlobalListOfTags)
 }
 
 func TestBDD(t *testing.T) {
 	status := godog.TestSuite{
-		Name: "Submit Blog Feature Test",
+		Name:                "Submit Blog Feature Test",
 		ScenarioInitializer: InitializeScenario,
 		Options: &godog.Options{
 			Format: "pretty",
 		},
 	}.Run()
 	if status != 0 {
-		t.Errorf("there was an error running tests, exit code %d",status)
+		t.Errorf("there was an error running tests, exit code %d", status)
 	}
 }

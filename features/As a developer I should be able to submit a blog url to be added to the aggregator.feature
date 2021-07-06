@@ -41,6 +41,7 @@ Feature: Submit blog to aggregator
     Then the blog should be added to the aggregator
     And profiles for the blog authors should be created
     And the blog posts from the feed should be added to the aggregator
+    And the blog post tags should be added to the global list of tags
     And "Akeem" should be redirected to the profile page for that blog 
     
   Scenario: Submitting a website that is not a blog to aggregator 
